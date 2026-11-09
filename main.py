@@ -125,3 +125,10 @@ def comment_create(
 
 
 
+@app.post('/posts/{post_id}/comments/{comment_id}/delete')
+def comment_delete(post_id: int, comment_id: int, db: Session = Depends(get_db)):
+    comment = db.get(Comment, comment_id)
+    db.delete(comment)
+    db.commit()
+
+    return RedirectResponse(f'/posts/{post_id}', status_code=303)
