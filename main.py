@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, Form, HTTPException
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
@@ -29,6 +30,12 @@ def get_db():
     with Session(engine) as db:
         yield db
 
+def get_post_or_404(post_id: int, db: Session = Depends(get_db)):
+    post = db.get(Post, post_id)
+
+    if post is None:
+        raise HTTPException(status_code=404, detail='해당 게시물이 없습니다.')
+    return post
 @app.get('/')
 def home():
     return {'hi': 'hello'}
@@ -43,15 +50,54 @@ def post_list(request: Request, db: Session = Depends(get_db)):
         context={'posts': posts}
     )
 
- 
+@app.get('/posts/new')
+def post_new(request: Request): 
+    return templates.TemplateResponse(
+        request=request,
+        name='new.html'
+    )
 
+@app.post('/posts/create')
+def post_create(content: str = Form(), db: Session = Depends(get_db)):
+    post = Post(content=content)
+    db.add(post)
+    db.commit()
+    return RedirectResponse('/posts', status_code=303)
 
+@app.get('/posts/{post_id}')
+def post_detail(request: Request, post: Post = Depends(get_post_or_404)):
+    return templates.TemplateResponse(
+        request=request,
+        name='detail.html',
+        context={'post': post}
+    )
 
+@app.get('/posts/{post_id}/edit')
+def post_edit(request: Request, post: Post = Depends(get_post_or_404)):
+    return templates.TemplateResponse(
+        request=request,
+        name='edit.html',
+        context={'post': post}
+    )
 
+@app.post('/posts/{post_id}/update')
+def post_update(
+    content: str = Form(), 
+    post: Post = (Depends(get_post_or_404)),
+    db: Session = Depends(get_db)):
+    post.content = content
+    db.commit()
 
+    return RedirectResponse('/posts', status_code=303)
 
-
-
+@app.post('/posts/{post_id}/delete')
+def post_delete(
+    post: Post = Depends(get_post_or_404),
+    db: Session = Depends(get_db)
+):
+    db.delete(post)
+    db.commit()
+    return RedirectResponse('/posts', status_code=303)
 
 
 
