@@ -5,7 +5,9 @@
 
 {% block content %}
 
-<p>{{post.content}}</p>
+<p>{{post.content}}</p> <form action="/posts/{{post.id}}/like" method="post">
+    <input type="submit" value="좋아요">
+</form>
 <a href="/posts/{{post.id}}/edit">수정하기</a>
 <form action="/posts/{{post.id}}/delete" method="post">
     <input type="submit" value="삭제하기">

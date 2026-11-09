@@ -21,6 +21,7 @@ class Post(Base):
     content: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     comments: Mapped[list['Comment']] = relationship(back_populates='post', cascade='all, delete-orphan')
+    like: Mapped[int] = mapped_column(default=0, server_default='0')
 
 
 
@@ -132,3 +133,10 @@ def comment_delete(post_id: int, comment_id: int, db: Session = Depends(get_db))
     db.commit()
 
     return RedirectResponse(f'/posts/{post_id}', status_code=303)
+
+@app.post('/posts/{post_id}/like')
+def add_like(post: Post = Depends(get_post_or_404), db: Session = Depends(get_db)):
+    post.like +=1
+    db.commit()
+
+    return RedirectResponse(f'/posts', status_code=303)

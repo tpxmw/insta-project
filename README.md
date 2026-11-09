@@ -31,3 +31,5 @@ uv run alembic upgrade head
 -alembic downgrade
 
 uv run alemic downgrade -1
+
+uv run alembic history
