@@ -27,3 +27,7 @@ uv run alembic revision --autogenerate -m 'create posts'
 - alembic upgrade
 
 uv run alembic upgrade head
+
+-alembic downgrade
+
+uv run alemic downgrade -1

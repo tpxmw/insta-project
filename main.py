@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Request, Depends, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from sqlalchemy import create_engine, select, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+from sqlalchemy import create_engine, select, func, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, relationship
 from datetime import datetime 
 
 
@@ -20,8 +20,18 @@ class Post(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     content: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    comments: Mapped[list['Comment']] = relationship(back_populates='post')
 
 
+
+class Comment(Base):
+    __tablename__='comments'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'))
+    post: Mapped['Post'] = relationship(back_populates = 'comments')
 
 
 app = FastAPI()
@@ -101,8 +111,17 @@ def post_delete(
     db.commit()
     return RedirectResponse('/posts', status_code=303)
 
+@app.post('/posts/{post_id}/comments/create')
+def comment_create(
+    content: str = Form(),
+    post: Post = Depends(get_post_or_404),
+    db: Session = Depends(get_db)
+):
+    comment = Comment(content=content, post=post)
+    db.add(comment)
+    db.commit()
 
-
+    return RedirectResponse(f'/posts/{post.id}', status_code=303)
 
 
 
