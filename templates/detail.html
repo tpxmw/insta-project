@@ -18,4 +18,12 @@
     <input type="submit" value="댓글등록">
 </form>
 
+{% for comment in post.comments %}
+    <p>{{comment.content}}</p>
+    <small>{{comment.created_at.strftime('%H:%M')}}</small>
+{% else %}
+    <p>첫 댓글을 달아주세요</p>
+
+{% endfor %}
+
 {% endblock %}
