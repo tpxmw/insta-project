@@ -24,4 +24,6 @@ uv run alembic init alembic
 uv run alembic revision --autogenerate -m 'create posts'
 
 
+- alembic upgrade
 
+uv run alembic upgrade head
