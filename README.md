@@ -15,7 +15,9 @@ psql -U postgres
 
 CREATE DATABASE insta OWNER sd4;
 
+- alembic init
 
+uv run alembic init alembic
 
 
 
